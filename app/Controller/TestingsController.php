@@ -5,7 +5,7 @@ App::uses('CakeTime', 'Utility');
 class TestingsController extends AppController {
 
 
-	public $uses = array('Zonee','Testing','Site','LiveStatus','TestingLogDevice','DeadList','UsedFuel','MonthlyReports');
+	public $uses = array('Zonee','Testing','Site','LiveStatus','TestingLogDevice','DeadList','UsedFuel','MonthlyReports','MonthlyReports');
 
 	public $components = array('Paginator', 'Session','Zonetree');
 
@@ -206,6 +206,9 @@ class TestingsController extends AppController {
 
 	public function monthly_used_fuel($id=null){
 
+		$month = $this->MonthlyReports->find('all');
+		pr($month);
+
 		$testingId = $this->Testing->find('first',
 			array(
 				'conditions' =>array(
@@ -229,9 +232,9 @@ class TestingsController extends AppController {
 			)
 		);
 
-		$used_fuel_per_month_sql = $this->UsedFuel->query("SELECT * FROM used_fuels WHERE site_id=".$testingId['Testing']['SiteModuleId']);
+		$used_fuel_per_month_sql = $this->UsedFuel->query("SELECT SUM(`used_fuel_perday`) AS total_used_fuel_per_month, DATE_FORMAT(`todays_date_time`,'%M') AS month FROM used_fuels WHERE site_id=".$testingId['Testing']['SiteModuleId']." GROUP BY DATE_FORMAT(`todays_date_time`, '%Y-%m')");
 
-		pr($used_fuel_per_month_sql);
+		//pr($used_fuel_per_month_sql);
 
 		$previous_six_months    = array();
   		$monthly_used_fuelsVal  = array();
@@ -271,8 +274,6 @@ class TestingsController extends AppController {
 		}
 		
 		//pr($monthly_used_fuels);
-		$monthly_used_fuels = array('0');
-		$daily_used_fuel = array('0');
 
 		if(count($monthly_used_fuels)>0){
 			$this->set(compact('monthly_used_fuels','id','daily_used_fuel'));
